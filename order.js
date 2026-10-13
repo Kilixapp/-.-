@@ -1,4 +1,4 @@
-/*
+
   KILIX ORDER MANAGEMENT
   Sends order data to Google Forms.
   Google Forms stores responses in Google Sheets.
@@ -77,27 +77,20 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    const total =
-      Number(product.price) + shippingPrice;
+    const total = Number(product.price) + shippingPrice;
 
     submitButton.textContent =
       "تأكيد الطلب — " + formatPrice(total);
 
-    submitButton.dataset.productPrice =
-      String(product.price);
-
-    submitButton.dataset.shippingPrice =
-      String(shippingPrice);
-
-    submitButton.dataset.totalPrice =
-      String(total);
+    submitButton.dataset.productPrice = String(product.price);
+    submitButton.dataset.shippingPrice = String(shippingPrice);
+    submitButton.dataset.totalPrice = String(total);
   }
 
   wilayaSelect.addEventListener("change", updateTotal);
   deliverySelect.addEventListener("change", updateTotal);
 
-  // Convert the website delivery selection
-  // to the exact Google Forms option text.
+  // Match the exact delivery options in Google Forms
   function getDeliveryText() {
     const value = String(deliverySelect.value)
       .trim()
@@ -117,7 +110,7 @@ document.addEventListener("DOMContentLoaded", function () {
       deliveryValue.includes("home") ||
       deliveryValue.includes("منزل")
     ) {
-      return "À domicile";
+      return "domicile";
     }
 
     if (
@@ -143,17 +136,10 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    const nameInput =
-      form.querySelector('[name="name"]');
-
-    const phoneInput =
-      form.querySelector('[name="phone"]');
-
-    const addressInput =
-      form.querySelector('[name="address"]');
-
-    const quantityInput =
-      form.querySelector('[name="quantity"]');
+    const nameInput = form.querySelector('[name="name"]');
+    const phoneInput = form.querySelector('[name="phone"]');
+    const addressInput = form.querySelector('[name="address"]');
+    const quantityInput = form.querySelector('[name="quantity"]');
 
     if (!nameInput || !phoneInput || !addressInput) {
       alert("تعذر العثور على بعض حقول الطلب.");
@@ -189,10 +175,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     const quantity = quantityInput
-      ? Math.max(
-          1,
-          parseInt(quantityInput.value, 10) || 1
-        )
+      ? Math.max(1, parseInt(quantityInput.value, 10) || 1)
       : 1;
 
     const selectedWilaya =
@@ -226,7 +209,6 @@ document.addEventListener("DOMContentLoaded", function () {
       iframe.id = "kilix-google-form-frame";
       iframe.name = "kilix-google-form-frame";
       iframe.style.display = "none";
-
       document.body.appendChild(iframe);
     }
 
@@ -262,10 +244,8 @@ document.addEventListener("DOMContentLoaded", function () {
       console.error("Order submission error:", error);
 
       googleForm.remove();
-
       isSubmitting = false;
       submitButton.disabled = false;
-
       updateTotal();
 
       alert("تعذر إرسال الطلب. حاول مرة أخرى.");
@@ -273,13 +253,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Clean up after the submission attempt.
-    // This delay does NOT confirm that Google accepted the order.
+    // This does not confirm that Google accepted the order.
     setTimeout(function () {
       googleForm.remove();
-
       isSubmitting = false;
       submitButton.disabled = false;
-
       updateTotal();
 
       alert(
