@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>صفحة المنتج</title>
+  <meta name="description" content="اكتشف المنتج واطلبه بسهولة مع التوصيل إلى ولايتك.">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <header class="topbar">
+    <div class="brand" id="store-name">متجري</div>
+    <a href="#order" class="mini-cta">اطلب الآن</a>
+  </header>
+
+  <main>
+
+    <!-- معلومات المنتج -->
+    <section class="hero">
+
+      <div class="hero-copy">
+        <span class="badge" id="product-badge"></span>
+
+        <h1 id="product-title"></h1>
+
+        <p class="lead" id="product-subtitle"></p>
+
+        <p id="product-description"></p>
+
+        <div class="price-row">
+          <div>
+            <small>سعر المنتج</small>
+            <strong id="product-price"></strong>
+          </div>
+
+          <div class="delivery">
+            🚚 التوصيل حسب الولاية
+          </div>
+        </div>
+
+        <a href="#order" class="main-cta">اطلب الآن ←</a>
+      </div>
+
+      <div class="hero-image">
+        <img id="main-product-image" src="" alt="">
+      </div>
+
+    </section>
+
+    <!-- معرض الصور -->
+    <section class="gallery">
+      <h2 id="gallery-title">اكتشف المنتج</h2>
+      <div class="grid" id="product-gallery"></div>
+    </section>
+
+    <!-- مميزات المنتج -->
+    <section class="benefits">
+      <h2 id="benefits-title">مميزات المنتج</h2>
+      <div class="cards" id="product-benefits"></div>
+    </section>
+
+    <!-- نموذج الطلب -->
+    <section class="order" id="order">
+
+      <div class="order-box">
+
+        <div class="order-info">
+          <span class="badge">🛍️ طلبك على بعد خطوات</span>
+
+          <h2 id="order-title">اطلب الآن</h2>
+
+          <p>املأ المعلومات التالية لتأكيد طلبك.</p>
+
+          <div class="order-price" id="order-product-price"></div>
+
+          <p>سعر المنتج دون احتساب التوصيل.</p>
+        </div>
+
+        <form id="orderForm">
+
+          <label>
+            الاسم الكامل
+            <input
+              name="name"
+              type="text"
+              placeholder="الاسم الكامل"
+              autocomplete="name"
+              required
+            >
+          </label>
+
+          <label>
+            رقم الهاتف
+            <input
+              name="phone"
+              type="tel"
+              inputmode="tel"
+              autocomplete="tel"
+              placeholder="05 / 06 / 07 ..."
+              required
+            >
+          </label>
+
+          <label>
+            الولاية
+            <select name="wilaya" required>
+              <option value="">اختر الولاية</option>
+              <option>أدرار</option>
+              <option>الشلف</option>
+              <option>الأغواط</option>
+              <option>أم البواقي</option>
+              <option>باتنة</option>
+              <option>بجاية</option>
+              <option>بسكرة</option>
+              <option>بشار</option>
+              <option>البليدة</option>
+              <option>البويرة</option>
+              <option>تمنراست</option>
+              <option>تبسة</option>
+              <option>تلمسان</option>
+              <option>تيارت</option>
+              <option>تيزي وزو</option>
+              <option>الجزائر</option>
+              <option>الجلفة</option>
+              <option>جيجل</option>
+              <option>سطيف</option>
+              <option>سعيدة</option>
+              <option>سكيكدة</option>
+              <option>سيدي بلعباس</option>
+              <option>عنابة</option>
+              <option>قالمة</option>
+              <option>قسنطينة</option>
+              <option>المدية</option>
+              <option>مستغانم</option>
+              <option>المسيلة</option>
+              <option>معسكر</option>
+              <option>ورقلة</option>
+              <option>وهران</option>
+              <option>البيض</option>
+              <option>إليزي</option>
+              <option>برج بوعريريج</option>
+              <option>بومرداس</option>
+              <option>الطارف</option>
+              <option>تندوف</option>
+              <option>تسمسيلت</option>
+              <option>الوادي</option>
+              <option>خنشلة</option>
+              <option>سوق أهراس</option>
+              <option>تيبازة</option>
+              <option>ميلة</option>
+              <option>عين الدفلى</option>
+              <option>النعامة</option>
+              <option>عين تموشنت</option>
+              <option>غرداية</option>
+              <option>غليزان</option>
+              <option>تيميمون</option>
+              <option>برج باجي مختار</option>
+              <option>أولاد جلال</option>
+              <option>بني عباس</option>
+              <option>إن صالح</option>
+              <option>إن قزام</option>
+              <option>تقرت</option>
+              <option>جانت</option>
+              <option>المغير</option>
+              <option>المنيعة</option>
+            </select>
+          </label>
+
+          <label>
+            مكان التوصيل
+            <select id="delivery-type" name="delivery_type" required>
+              <option value="home">التوصيل إلى المنزل 🏠</option>
+              <option value="desk">التوصيل إلى المكتب 🏢</option>
+            </select>
+          </label>
+
+          <label>
+            البلدية والعنوان
+            <textarea
+              name="address"
+              rows="3"
+              placeholder="البلدية / الحي / العنوان بالتفصيل"
+              required
+            ></textarea>
+          </label>
+
+          <button type="submit" id="submit-order">
+            تأكيد الطلب
+          </button>
+
+          <p class="form-note">
+            🔒 تُستخدم معلوماتك لتأكيد الطلب والتواصل معك بشأن التوصيل.
+          </p>
+
+        </form>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer>
+    © <span id="current-year"></span>
+    <span id="footer-store-name">متجري</span>
+  </footer>
+
+  <script src="product.js"></script>
+  <script src="script.js"></script>
+
+</body>
+</html>
