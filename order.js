@@ -1,7 +1,7 @@
 /*
   KILIX ORDER MANAGEMENT
-  Sends orders to Google Forms,
-  which stores responses in Google Sheets.
+  Sends order data to Google Forms.
+  Google Forms stores responses in Google Sheets.
 */
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -25,10 +25,12 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
 
+  // Google Forms response endpoint
   const googleFormURL =
     "https://docs.google.com/forms/d/e/" +
     "1FAIpQLSeBjUcls_s7iJeTaVsdM8ahuABwrrKQxIEtbQIuT_ngL0XU1g/formResponse";
 
+  // Google Forms field IDs
   const fields = {
     name: "entry.253285280",
     phone: "entry.938009579",
@@ -39,26 +41,34 @@ document.addEventListener("DOMContentLoaded", function () {
     quantity: "entry.581831521"
   };
 
+  let isSubmitting = false;
+
   function formatPrice(amount) {
     return (
       new Intl.NumberFormat("fr-DZ").format(amount) +
       " " +
-      product.currency
+      (product.currency || "DA")
     );
   }
 
+  // Calculate delivery price
   function getShippingPrice() {
     const wilaya = wilayaSelect.value;
     const deliveryType = deliverySelect.value;
     const prices = deliveryPrices[wilaya];
 
-    if (!prices || prices[deliveryType] === undefined) {
+    if (
+      !prices ||
+      prices[deliveryType] === undefined ||
+      !Number.isFinite(Number(prices[deliveryType]))
+    ) {
       return null;
     }
 
     return Number(prices[deliveryType]);
   }
 
+  // Update total price
   function updateTotal() {
     const shippingPrice = getShippingPrice();
 
@@ -67,79 +77,167 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    const total = Number(product.price) + shippingPrice;
+    const total =
+      Number(product.price) + shippingPrice;
 
     submitButton.textContent =
       "تأكيد الطلب — " + formatPrice(total);
 
-    submitButton.dataset.productPrice = String(product.price);
-    submitButton.dataset.shippingPrice = String(shippingPrice);
-    submitButton.dataset.totalPrice = String(total);
+    submitButton.dataset.productPrice =
+      String(product.price);
+
+    submitButton.dataset.shippingPrice =
+      String(shippingPrice);
+
+    submitButton.dataset.totalPrice =
+      String(total);
   }
 
   wilayaSelect.addEventListener("change", updateTotal);
   deliverySelect.addEventListener("change", updateTotal);
 
+  // Convert the website delivery selection
+  // to the exact Google Forms option text.
+  function getDeliveryText() {
+    const value = String(deliverySelect.value)
+      .trim()
+      .toLowerCase();
+
+    const selectedOption =
+      deliverySelect.options[deliverySelect.selectedIndex];
+
+    const label = selectedOption
+      ? selectedOption.text.trim().toLowerCase()
+      : "";
+
+    const deliveryValue = value + " " + label;
+
+    if (
+      deliveryValue.includes("domicile") ||
+      deliveryValue.includes("home") ||
+      deliveryValue.includes("منزل")
+    ) {
+      return "À domicile";
+    }
+
+    if (
+      deliveryValue.includes("bureau") ||
+      deliveryValue.includes("office") ||
+      deliveryValue.includes("مكتب")
+    ) {
+      return "Au bureau";
+    }
+
+    return null;
+  }
+
+  // Submit order
   form.addEventListener("submit", function (event) {
     event.preventDefault();
 
+    if (isSubmitting) {
+      return;
+    }
+
     if (!form.reportValidity()) {
+      return;
+    }
+
+    const nameInput =
+      form.querySelector('[name="name"]');
+
+    const phoneInput =
+      form.querySelector('[name="phone"]');
+
+    const addressInput =
+      form.querySelector('[name="address"]');
+
+    const quantityInput =
+      form.querySelector('[name="quantity"]');
+
+    if (!nameInput || !phoneInput || !addressInput) {
+      alert("تعذر العثور على بعض حقول الطلب.");
+      console.error("Missing order form inputs.");
+      return;
+    }
+
+    const name = nameInput.value.trim();
+    const phone = phoneInput.value.trim();
+    const address = addressInput.value.trim();
+
+    if (!name || !phone || !address) {
+      alert("يرجى ملء جميع المعلومات المطلوبة.");
       return;
     }
 
     const shippingPrice = getShippingPrice();
 
     if (shippingPrice === null) {
-      alert("اختَر الولاية ونوع التوصيل أولًا.");
+      alert("اختَر الولاية ونوع التوصيل بشكل صحيح.");
       return;
     }
 
-    const name = form.querySelector('[name="name"]');
-    const phone = form.querySelector('[name="phone"]');
-    const address = form.querySelector('[name="address"]');
-    const quantityInput = form.querySelector('[name="quantity"]');
+    const deliveryText = getDeliveryText();
 
-    if (!name || !phone || !address) {
-      alert("تعذر العثور على بعض حقول الطلب.");
+    if (!deliveryText) {
+      alert("تعذر تحديد طريقة التوصيل.");
+      console.error(
+        "Unsupported delivery value:",
+        deliverySelect.value
+      );
       return;
     }
 
     const quantity = quantityInput
-      ? Math.max(1, Number(quantityInput.value) || 1)
+      ? Math.max(
+          1,
+          parseInt(quantityInput.value, 10) || 1
+        )
       : 1;
 
-    const wilayaText =
-      wilayaSelect.options[wilayaSelect.selectedIndex].text;
+    const selectedWilaya =
+      wilayaSelect.options[wilayaSelect.selectedIndex];
 
-    const deliveryValue = deliverySelect.value.toLowerCase();
+    const wilayaText = selectedWilaya
+      ? selectedWilaya.text.trim()
+      : wilayaSelect.value;
 
-    let deliveryText;
+    // Prepare order information
+    const orderData = {
+      [fields.name]: name,
+      [fields.phone]: phone,
+      [fields.wilaya]: wilayaText,
+      [fields.delivery]: deliveryText,
+      [fields.address]: address,
+      [fields.product]:
+        product.name ||
+        product.title ||
+        "Produit Kilix",
+      [fields.quantity]: String(quantity)
+    };
 
-    if (
-      deliveryValue.includes("home") ||
-      deliveryValue.includes("domicile")
-    ) {
-      deliveryText = "domicile";
-    } else {
-      deliveryText = "bureau";
+    // Create a hidden iframe for submission
+    let iframe = document.getElementById(
+      "kilix-google-form-frame"
+    );
+
+    if (!iframe) {
+      iframe = document.createElement("iframe");
+      iframe.id = "kilix-google-form-frame";
+      iframe.name = "kilix-google-form-frame";
+      iframe.style.display = "none";
+
+      document.body.appendChild(iframe);
     }
 
+    // Create the submission form
     const googleForm = document.createElement("form");
 
     googleForm.method = "POST";
     googleForm.action = googleFormURL;
-    googleForm.target = "kilix-google-form-frame";
+    googleForm.target = iframe.name;
+    googleForm.acceptCharset = "UTF-8";
     googleForm.style.display = "none";
-
-    const orderData = {
-      [fields.name]: name.value.trim(),
-      [fields.phone]: phone.value.trim(),
-      [fields.wilaya]: wilayaText,
-      [fields.delivery]: deliveryText,
-      [fields.address]: address.value.trim(),
-      [fields.product]: product.name || product.title || "Produit Kilix",
-      [fields.quantity]: String(quantity)
-    };
 
     Object.entries(orderData).forEach(function ([key, value]) {
       const input = document.createElement("input");
@@ -151,36 +249,46 @@ document.addEventListener("DOMContentLoaded", function () {
       googleForm.appendChild(input);
     });
 
-    let iframe = document.getElementById("kilix-google-form-frame");
-
-    if (!iframe) {
-      iframe = document.createElement("iframe");
-      iframe.id = "kilix-google-form-frame";
-      iframe.name = "kilix-google-form-frame";
-      iframe.style.display = "none";
-
-      document.body.appendChild(iframe);
-    }
-
     document.body.appendChild(googleForm);
 
+    // Lock the button while submitting
+    isSubmitting = true;
     submitButton.disabled = true;
     submitButton.textContent = "جاري إرسال الطلب...";
 
-    googleForm.submit();
+    try {
+      googleForm.submit();
+    } catch (error) {
+      console.error("Order submission error:", error);
 
+      googleForm.remove();
+
+      isSubmitting = false;
+      submitButton.disabled = false;
+
+      updateTotal();
+
+      alert("تعذر إرسال الطلب. حاول مرة أخرى.");
+      return;
+    }
+
+    // Clean up after the submission attempt.
+    // This delay does NOT confirm that Google accepted the order.
     setTimeout(function () {
       googleForm.remove();
 
+      isSubmitting = false;
       submitButton.disabled = false;
+
       updateTotal();
 
       alert(
-        "تم إرسال الطلب لمحاولة تسجيله. " +
-        "يرجى التأكد من ظهوره في Google Sheets."
+        "تمت محاولة إرسال الطلب. " +
+        "تحقق من Google Sheets للتأكد من تسجيله."
       );
-    }, 2000);
+    }, 3000);
   });
 
+  // Initial total
   updateTotal();
 });
